@@ -36,7 +36,7 @@ app.post('/checkout-api', async (req, res) => {
               idempotency_key: uuidv4()
             },
             idempotency_key: uuidv4(),
-            redirect_url: `${process.env.NGROK_URL}/confirm`
+            redirect_url: `${process.env.HOST_URL}/confirm`
         }, {
             headers: {
                 'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -64,7 +64,7 @@ app.post('/checkout-np', async (req, res) => {
             },
             idempotencyKey: uuidv4()
           },
-          redirectUrl: `${process.env.NGROK_URL}/confirm`
+          redirectUrl: `${process.env.HOST_URL}/confirm`
         })
         const { checkoutPageUrl } = response.result.checkout
         res.status(200).json({checkoutPageUrl})
