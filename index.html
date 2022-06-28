@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Checkout API</title>
+    <style>
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+        }
+        td {
+            text-align: center;
+        }
+        .wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .left {
+            padding-right: 50px;
+            margin-right: 50px;
+            border-right: 1px solid #111;
+            height: 80vh;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Cart</h1>
+    <div class="wrapper">
+        <div class="left">
+            <select id="items">
+                <option value="Laptop 50000" selected>Laptop</option>
+                <option value="Smartphone 30000">Smartphone</option>
+                <option value="PC 100000">PC</option>
+            </select>
+            <input type="number" id="items-number" min="1" value="1">
+            <button id="add-item">Add item</button>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                </tr>
+            </table>
+        </div>
+        <div class="righ">
+            <button id="checkout-api">Checkout with API</button>
+            <button id="checkout-np">Checkout with Node Package</button>
+        </div>
+    </div>
+    <script>
+        let items = [];
+        let itemsTable = document.querySelector('table');
+        let addItemButton = document.querySelector('#add-item');
+        let itemsNumberInput = document.querySelector('#items-number');
+        let itemsSelect = document.querySelector('#items');
+        let itemsNumber, itemsSelectValue, itemsSelectNumber, itemsSelectPrice, itemsSelectName;
+        addItemButton.addEventListener('click', function() {
+            itemsNumber = itemsNumberInput.value;
+            itemsSelectValue = itemsSelect.value;
+            itemsSelectNumber = itemsNumberInput.value;
+            itemsSelectPrice = itemsSelect.value.split(' ')[1];
+            itemsSelectName = itemsSelect.value.split(' ')[0];
+            items.push({
+                name: itemsSelectName,
+                price: itemsSelectPrice,
+                quantity: itemsNumber
+            });
+            itemsTable.innerHTML += '<tr><td>' + itemsSelectName + '</td><td>' + itemsSelectPrice.substring(0, itemsSelectPrice.length - 2) + '</td><td>' + itemsNumber + '</td></tr>';
+            itemsNumberInput.value = '1';
+        });
+        itemsNumberInput.addEventListener('keyup', function(e) {
+            if (e.keyCode === 13) {
+                addItemButton.click();
+            }
+        });
+        itemsSelect.addEventListener('change', function() {
+            itemsSelectValue = itemsSelect.value;
+            itemsSelectNumber = itemsNumberInput.value;
+            itemsSelectPrice = itemsSelect.value.split(' ')[1];
+            itemsSelectName = itemsSelect.value.split(' ')[0];
+        });
+
+        function postCheckout(endpoint) {
+            items = items.map(function(item) {
+                return {
+                    name: item.name,
+                    quantity: item.quantity.toString(),
+                    [endpoint == '/checkout-api' ? 'item_type' : 'itemType']: 'ITEM',
+                    [endpoint == '/checkout-api' ? 'base_price_money' : 'basePriceMoney']: {
+                        amount: parseInt(item.price),
+                        currency: 'USD'
+                    },
+                };
+            });
+
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', endpoint);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    let response = JSON.parse(xhr.responseText);
+                    window.location.href = response.checkoutPageUrl;
+                } else {
+                    window.location.href = '/error';
+                }
+            };
+            xhr.send(JSON.stringify({
+                'line_items': items
+            }));
+        }
+
+        let checkoutWithAPIButton = document.querySelector('#checkout-api');
+        checkoutWithAPIButton.addEventListener('click', function() {
+            postCheckout('/checkout-api')
+        });
+        let checkoutWithNPButton = document.querySelector('#checkout-np');
+        checkoutWithNPButton.addEventListener('click', function() {
+            postCheckout('/checkout-np')
+        });
+    </script>
+</body>
+</html>
