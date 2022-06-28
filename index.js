@@ -9,6 +9,7 @@ const client = new Client({
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
+const port = process.env.PORT || 3000
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -75,4 +76,4 @@ app.post('/checkout-np', async (req, res) => {
 })
 
 
-app.listen(3000, console.log('Server started on port 3000'))
+app.listen(port, '0.0.0.0', console.log(`Server started on port ${3000}`))
